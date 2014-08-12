@@ -1,4 +1,4 @@
-// Crypto utils.
+//! Crypto utils.
 #![macro_escape]
 
 use std::intrinsics;
