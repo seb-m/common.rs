@@ -1,18 +1,13 @@
 env:
   global:
-    - secure:
     - LD_LIBRARY_PATH: /usr/local/lib
-before_install:
-  - sudo add-apt-repository --yes ppa:hansjorg/rust
-  - sudo add-apt-repository --yes ppa:cmrx64/cargo
-  - sudo apt-get update -qq
 install:
-  - sudo apt-get install -qq rust-nightly cargo
+  - curl https://static.rust-lang.org/rustup.sh | sudo sh
+  - rustc -v
 script:
   - cargo build --verbose
-  - make doc
-after_script:
-  - curl http://www.rust-ci.org/artifacts/put?t=$RUSTCI_TOKEN | sh
+  - cargo doc --no-deps --verbose
+  - mv target/doc doc
 notifications:
   email:
     on_success: change

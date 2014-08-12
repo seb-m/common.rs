@@ -1,8 +1,8 @@
-# Rust Common
+# Common
 
 ## Description
 
-Common [Rust](http://www.rust-lang.org/) utilities shared by different projects, such as [Curve41417.rs](https://github.com/seb-m/curve41417.rs). It is not intended to be used as is but instead it should be included as a dependancy from other projects.
+Common [Rust](http://www.rust-lang.org/) crypto utilities. It is intended to be used as a library and included as a dependancy in other projects, for instance [Curve41417.rs](https://github.com/seb-m/curve41417.rs) uses it.
 
 
 ## License
