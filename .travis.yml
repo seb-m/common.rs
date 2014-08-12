@@ -1,5 +1,6 @@
 env:
   global:
+    - secure: gCLMuRsPBINA459kgJOZOph9pqEUzu/oH7e5DhCbJTLV0n4kK6BN1wpqQlVDIe8640imEzwlPZvqYSmf4d9Rww78YvP7AWTxM8WajkN6vW/oJXMShhSLjw5u9qiIvTIvRkh5HcfsAfNszs2vKcdGMeG6VQfs3elNB2UqTGj3oyA=
     - LD_LIBRARY_PATH: /usr/local/lib
 install:
   - curl https://static.rust-lang.org/rustup.sh | sudo sh
@@ -8,6 +9,8 @@ script:
   - cargo build --verbose
   - cargo doc --no-deps --verbose
   - mv target/doc doc
+after_script:
+  - curl http://www.rust-ci.org/artifacts/put?t=$RUSTCI_TOKEN | sh
 notifications:
   email:
     on_success: change
