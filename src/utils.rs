@@ -6,7 +6,7 @@ use std::mem;
 use std::num;
 use std::ptr;
 use std::rand::os::OsRng;
-use std::slice::MutableVector;
+use std::slice::MutableSlice;
 
 
 // Little-endian encodings.
