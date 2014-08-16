@@ -125,6 +125,11 @@ macro_rules! try_none(
 )
 
 #[macro_export]
+macro_rules! try_err(
+    ($e:expr) => (match $e { Some(e) => e, None => return Err(()) })
+)
+
+#[macro_export]
 macro_rules! try_option(
     ($e:expr) => (match $e { Some(e) => e, None => return None })
 )
