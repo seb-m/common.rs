@@ -49,8 +49,8 @@ fn zero_memory<T>(b: &mut [T]) {
     }
 }
 
-// Copy count elements from slice src to mutable slice dst.
-// Requirement: count >= min(srclen, dstlen)
+/// Copy `count` elements from slice `src` to mutable slice `dst`.
+/// Requirement: `count >= min(srclen, dstlen)`.
 #[allow(dead_code)]
 pub fn copy_slice_memory<T>(dst: &mut[T], src: &[T], count: uint) {
     assert!(dst.len() >= count && src.len() >= count);
@@ -71,7 +71,7 @@ fn byte_eq(x: u8, y: u8) -> u8 {
     z
 }
 
-// Return true iff x == y; false otherwise.
+/// Return `true` iff `x == y`; `false` otherwise.
 pub fn bytes_eq<T>(x: &[T], y: &[T]) -> bool {
     if x.len() != y.len() {
         return false;
@@ -95,9 +95,9 @@ pub fn bytes_eq<T>(x: &[T], y: &[T]) -> bool {
     byte_eq(d, 0) == 1
 }
 
-// x and y are swapped iff cond is 1, there are left unchanged iff cond is 0.
-// Currently only works for arrays of signed integers. cond is expected to
-// be 0 or 1.
+/// `x` and `y` are swapped iff `cond` is equal to `1`, there are left
+/// unchanged iff `cond` is equal to `0`. Currently only works for arrays
+/// of signed integers. `cond` is expected to be `0` or `1`.
 pub fn bytes_cswap<T: Signed + Primitive + Int>(cond: T,
                                                 x: &mut [T],
                                                 y: &mut [T]) {
@@ -112,23 +112,26 @@ pub fn bytes_cswap<T: Signed + Primitive + Int>(cond: T,
 }
 
 
-// Instanciate a secure RNG (based on urandom).
+/// Instanciate a secure RNG (based on `urandom`).
 pub fn urandom_rng() -> OsRng {
     OsRng::new().unwrap()
 }
 
 
 // Helpers
-#[doc(hidden)]
 #[macro_export]
 macro_rules! try_none(
     ($e:expr) => (match $e { Ok(e) => e, Err(_) => return None })
 )
 
-#[doc(hidden)]
 #[macro_export]
 macro_rules! try_option(
     ($e:expr) => (match $e { Some(e) => e, None => return None })
+)
+
+#[macro_export]
+macro_rules! try_opt_bool(
+    ($e:expr) => (match $e { Some(e) => e, None => return false })
 )
 
 
