@@ -11,5 +11,6 @@ clean:
 		-name '*.o' -or \
 		-name '*.so' -or \
 		-name 'mlock' -or \
+		-name 'Cargo.lock' -or \
 		-name '*~' \) \
 		-print -exec rm {} \;

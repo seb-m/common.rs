@@ -3,5 +3,5 @@ name = "common"
 version = "0.0.1"
 authors = ["Sebastien Martini <seb@dbzteam.org>"]
 
-[[lib]]
+[lib]
 name = "common"
