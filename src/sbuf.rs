@@ -1,4 +1,4 @@
-//! Secure Buffer.
+//! Secure Buffer
 use alloc::heap;
 use libc::consts::os::posix88::{MAP_ANON, MAP_PRIVATE, MAP_FAILED,
                                 PROT_READ, PROT_WRITE, PROT_NONE};

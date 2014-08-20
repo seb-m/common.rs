@@ -1,4 +1,4 @@
-//! Crypto utils.
+//! Crypto utils
 use std::intrinsics;
 use std::mem;
 use std::num;
