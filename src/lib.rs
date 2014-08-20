@@ -21,5 +21,6 @@ extern crate alloc;
 extern crate libc;
 extern crate serialize;
 
+pub mod macros;
 pub mod utils;
 pub mod sbuf;

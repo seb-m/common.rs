@@ -1,6 +1,4 @@
 //! Crypto utils.
-#![macro_escape]
-
 use std::intrinsics;
 use std::mem;
 use std::num;
@@ -116,28 +114,6 @@ pub fn bytes_cswap<T: Signed + Primitive + Int>(cond: T,
 pub fn urandom_rng() -> OsRng {
     OsRng::new().unwrap()
 }
-
-
-// Helpers
-#[macro_export]
-macro_rules! try_none(
-    ($e:expr) => (match $e { Ok(e) => e, Err(_) => return None })
-)
-
-#[macro_export]
-macro_rules! try_err(
-    ($e:expr) => (match $e { Some(e) => e, None => return Err(()) })
-)
-
-#[macro_export]
-macro_rules! try_option(
-    ($e:expr) => (match $e { Some(e) => e, None => return None })
-)
-
-#[macro_export]
-macro_rules! try_opt_bool(
-    ($e:expr) => (match $e { Some(e) => e, None => return false })
-)
 
 
 #[cfg(test)]
