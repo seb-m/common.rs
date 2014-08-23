@@ -383,6 +383,7 @@ impl<A: Allocator, T> SBuf<A, T> {
         n
     }
 
+    /// Build a new instance by concatenating `items` together.
     pub fn from_slices(items: &[&[T]]) -> SBuf<A, T> {
         let length = items.iter().map(|x| x.len()).sum();
         let n = SBuf::with_length(length);
@@ -396,6 +397,12 @@ impl<A: Allocator, T> SBuf<A, T> {
             }
         }
         n
+    }
+
+    /// Build a new instance by concatenating `items` together.
+    pub fn from_sbufs(items: &[&SBuf<A, T>]) -> SBuf<A, T> {
+        let v: Vec<&[T]> = items.iter().map(|x| x.as_slice()).collect();
+        SBuf::from_slices(v.slice_from(0))
     }
 
     /// Return a pointer to buffer's memory.
