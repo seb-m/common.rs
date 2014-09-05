@@ -1,4 +1,4 @@
-//! Common Rust utilities.
+//! Common Rust utilities
 //!
 #![crate_name = "common"]
 #![comment = "Common Rust utilities"]
