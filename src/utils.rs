@@ -37,6 +37,12 @@ pub fn u64to8_le(buf: &mut [u8], val: &u64) {
 }
 
 
+/// Return `n` padding bytes to make `len + n` the shortest multiple of 16.
+pub fn pad16(len: uint) -> Vec<u8> {
+    Vec::from_elem((16 - (len % 16)) % 16, 0)
+}
+
+
 // Zero-out memory buffer.
 pub fn zero_memory<T>(b: &mut [T]) {
     unsafe {
@@ -184,5 +190,14 @@ mod tests {
         assert!(a != b);
         utils::copy_slice_memory(b.as_mut_slice(), a.as_slice(), a.len());
         assert!(a == b);
+    }
+
+    #[test]
+    fn test_pad16() {
+        assert!(utils::pad16(0).len() == 0);
+        assert!(utils::pad16(16).len() == 0);
+        assert!(utils::pad16(1).len() == 15);
+        assert!(utils::pad16(15).len() == 1);
+        assert!(utils::pad16(42).len() == 6);
     }
 }
