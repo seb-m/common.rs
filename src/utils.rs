@@ -7,7 +7,7 @@ use std::rand::os::OsRng;
 use std::slice::MutableSlice;
 
 
-// Little-endian encodings.
+/// `Bytes` to `u32` little-endian decoding.
 pub fn u8to32_le(val: &mut u32, buf: &[u8]) {
     assert!(buf.len() >= 4);
     for i in range(0u, 4) {
@@ -15,6 +15,7 @@ pub fn u8to32_le(val: &mut u32, buf: &[u8]) {
     }
 }
 
+/// `u32` to `bytes` little-endian encoding.
 pub fn u32to8_le(buf: &mut [u8], val: &u32) {
     assert!(buf.len() >= 4);
     for i in range(0u, 4) {
@@ -22,6 +23,7 @@ pub fn u32to8_le(buf: &mut [u8], val: &u32) {
     }
 }
 
+/// `Bytes` to `u64` little-endian decoding.
 pub fn u8to64_le(val: &mut u64, buf: &[u8]) {
     assert!(buf.len() >= 8);
     for i in range(0u, 8) {
@@ -29,6 +31,7 @@ pub fn u8to64_le(val: &mut u64, buf: &[u8]) {
     }
 }
 
+/// `u64` to `bytes` little-endian encoding.
 pub fn u64to8_le(buf: &mut [u8], val: &u64) {
     assert!(buf.len() >= 8);
     for i in range(0u, 8) {
@@ -37,13 +40,16 @@ pub fn u64to8_le(buf: &mut [u8], val: &u64) {
 }
 
 
+/// Pad to multiple of 16.
+///
 /// Return `n` padding bytes to make `len + n` the shortest multiple of 16.
+/// `n` is comprised between `0` and `15`.
 pub fn pad16(len: uint) -> Vec<u8> {
     Vec::from_elem((16 - (len % 16)) % 16, 0)
 }
 
 
-// Zero-out memory buffer.
+/// Zero-out memory buffer.
 pub fn zero_memory<T>(b: &mut [T]) {
     unsafe {
         // FIXME: not sure how much this llvm intrinsics could not be
@@ -52,6 +58,8 @@ pub fn zero_memory<T>(b: &mut [T]) {
     }
 }
 
+/// Copy memory buffer.
+///
 /// Copy `count` elements from slice `src` to mutable slice `dst`.
 /// Requirement: `count >= min(srclen, dstlen)`.
 pub fn copy_slice_memory<T>(dst: &mut[T], src: &[T], count: uint) {
@@ -73,6 +81,8 @@ fn byte_eq(x: u8, y: u8) -> u8 {
     z
 }
 
+/// Compare bytes buffers.
+///
 /// Return `true` iff `x == y`; `false` otherwise.
 pub fn bytes_eq<T>(x: &[T], y: &[T]) -> bool {
     if x.len() != y.len() {
@@ -97,6 +107,8 @@ pub fn bytes_eq<T>(x: &[T], y: &[T]) -> bool {
     byte_eq(d, 0) == 1
 }
 
+/// Conditionally swap bytes.
+///
 /// `x` and `y` are swapped iff `cond` is equal to `1`, there are left
 /// unchanged iff `cond` is equal to `0`. Currently only works for arrays
 /// of signed integers. `cond` is expected to be `0` or `1`.
