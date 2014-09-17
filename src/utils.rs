@@ -126,7 +126,7 @@ pub fn bytes_cswap<T: Signed + Primitive + Int>(cond: T,
 }
 
 
-/// Instanciate a secure RNG (based on `urandom`).
+/// Instanciate a secure RNG based on `urandom`.
 pub fn urandom_rng() -> OsRng {
     OsRng::new().unwrap()
 }

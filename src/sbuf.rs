@@ -495,8 +495,8 @@ impl<A: Allocator, T> SBuf<A, T> {
 
     /// Return an iterator over mutable references to the elements of the
     /// buffer in order.
-    pub fn mut_iter(&mut self) -> MutItems<T> {
-        self.as_mut_slice().mut_iter()
+    pub fn iter_mut(&mut self) -> MutItems<T> {
+        self.as_mut_slice().iter_mut()
     }
 
     /// Return a slice of self spanning the interval [`start`, `end`).
@@ -509,8 +509,8 @@ impl<A: Allocator, T> SBuf<A, T> {
     /// Return a mutable slice of `self` between `start` and `end`.
     /// Fails when `start` or `end` point outside the bounds of `self`, or when
     /// `start` > `end`.
-    pub fn mut_slice(&mut self, start: uint, end: uint) -> &mut [T] {
-        self.as_mut_slice().mut_slice(start, end)
+    pub fn slice_mut(&mut self, start: uint, end: uint) -> &mut [T] {
+        self.as_mut_slice().slice_mut(start, end)
     }
 
     /// Return a slice of `self` from `start` to the end of the buffer.
@@ -521,8 +521,8 @@ impl<A: Allocator, T> SBuf<A, T> {
 
     /// Return a mutable slice of self from `start` to the end of the buffer.
     /// Fails when `start` points outside the bounds of self.
-    pub fn mut_slice_from(&mut self, start: uint) -> &mut [T] {
-        self.as_mut_slice().mut_slice_from(start)
+    pub fn slice_from_mut(&mut self, start: uint) -> &mut [T] {
+        self.as_mut_slice().slice_from_mut(start)
     }
 
     /// Return a slice of self from the start of the buffer to `end`.
@@ -533,8 +533,8 @@ impl<A: Allocator, T> SBuf<A, T> {
 
     /// Return a mutable slice of self from the start of the buffer to `end`.
     /// Fails when `end` points outside the bounds of self.
-    pub fn mut_slice_to(&mut self, end: uint) -> &mut [T] {
-        self.as_mut_slice().mut_slice_to(end)
+    pub fn slice_to_mut(&mut self, end: uint) -> &mut [T] {
+        self.as_mut_slice().slice_to_mut(end)
     }
 
     /// Return a pair of mutable slices that divides the buffer at an index.
@@ -543,8 +543,8 @@ impl<A: Allocator, T> SBuf<A, T> {
     /// index `mid` itself) and the second will contain all indices from
     /// `[mid, len)` (excluding the index `len` itself). Fails if
     /// `mid > len`.
-    pub fn mut_split_at(&mut self, mid: uint) -> (&mut [T], &mut [T]) {
-        self.as_mut_slice().mut_split_at(mid)
+    pub fn split_at_mut(&mut self, mid: uint) -> (&mut [T], &mut [T]) {
+        self.as_mut_slice().split_at_mut(mid)
     }
 
     /// Reverse the order of elements in a buffer, in place.
