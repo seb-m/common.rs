@@ -11,6 +11,7 @@ use std::fmt;
 use std::intrinsics;
 use std::iter::AdditiveIterator;
 use std::mem;
+use std::ops;
 use std::os;
 use std::ptr;
 use std::rand::Rng;
@@ -592,6 +593,42 @@ impl<A: Allocator, T> Index<uint, T> for SBuf<A, T> {
 impl<A: Allocator, T> IndexMut<uint, T> for SBuf<A, T> {
     fn index_mut(&mut self, index: &uint) -> &mut T {
         self.get_mut(*index)
+    }
+}
+
+impl<A: Allocator, T> ops::Slice<uint, [T]> for SBuf<A, T> {
+    fn as_slice_<'a>(&'a self) -> &'a [T] {
+        self.as_slice()
+    }
+
+    fn slice_from_<'a>(&'a self, start: &uint) -> &'a [T] {
+        self.as_slice().slice_from_(start)
+    }
+
+    fn slice_to_<'a>(&'a self, end: &uint) -> &'a [T] {
+        self.as_slice().slice_to_(end)
+    }
+
+    fn slice_<'a>(&'a self, start: &uint, end: &uint) -> &'a [T] {
+        self.as_slice().slice_(start, end)
+    }
+}
+
+impl<A: Allocator, T> ops::SliceMut<uint, [T]> for SBuf<A, T> {
+    fn as_mut_slice_<'a>(&'a mut self) -> &'a mut [T] {
+        self.as_mut_slice()
+    }
+
+    fn slice_from_mut_<'a>(&'a mut self, start: &uint) -> &'a mut [T] {
+        self.as_mut_slice().slice_from_mut_(start)
+    }
+
+    fn slice_to_mut_<'a>(&'a mut self, end: &uint) -> &'a mut [T] {
+        self.as_mut_slice().slice_to_mut_(end)
+    }
+
+    fn slice_mut_<'a>(&'a mut self, start: &uint, end: &uint) -> &'a mut [T] {
+        self.as_mut_slice().slice_mut_(start, end)
     }
 }
 
