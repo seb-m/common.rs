@@ -154,8 +154,7 @@ impl Allocator for GuardedHeapAllocator {
 }
 
 
-#[cfg(target_os = "linux")]
-#[cfg(target_os = "android")]
+#[cfg(any(target_os = "linux", target_os = "android"))]
 mod impadv {
     use libc::consts::os::bsd44::MADV_DONTFORK;
     use libc::EINVAL;
@@ -184,8 +183,7 @@ mod impadv {
     }
 }
 
-#[cfg(target_os = "macos")]
-#[cfg(target_os = "ios")]
+#[cfg(any(target_os = "macos", target_os = "ios"))]
 mod impadv {
     use libc::funcs::bsd44;
     use libc::types::common::c95::c_void;
@@ -205,17 +203,15 @@ mod impadv {
     }
 }
 
-#[cfg(not(target_os = "linux"), not(target_os = "android"),
-      not(target_os = "macos"), not(target_os = "ios"))]
+#[cfg(not(any(target_os = "linux", target_os = "android",
+              target_os = "macos", target_os = "ios")))]
 mod impadv {
     pub unsafe fn madvise(_: *mut u8, _: uint) {
     }
 }
 
 
-#[cfg(target_os = "macos")]
-#[cfg(target_os = "ios")]
-#[cfg(target_os = "freebsd")]
+#[cfg(any(target_os = "macos", target_os = "ios", target_os = "freebsd"))]
 mod impinh {
     pub use libc::types::common::c95::c_void;
     pub use libc::types::os::arch::c95::{c_int, size_t};
@@ -243,8 +239,8 @@ mod impinh {
     }
 }
 
-#[cfg(not(target_os = "macos"), not(target_os = "ios"),
-      not(target_os = "freebsd"))]
+#[cfg(not(any(target_os = "macos", target_os = "ios",
+              target_os = "freebsd")))]
 mod impinh {
     pub unsafe fn minherit(_: *mut u8, _: uint) {
     }
