@@ -150,7 +150,7 @@ mod tests {
         let zero = [0u32, ..16];
         let mut s = Test {x: one};
         assert!(s.x == one);
-        super::zero_memory(s.x.as_mut_slice());
+        super::zero_memory(s.x[mut]);
         assert!(s.x == zero);
     }
 
@@ -200,7 +200,7 @@ mod tests {
         let mut b: [i64, ..64] = [0, ..64];
 
         assert!(a != b);
-        utils::copy_slice_memory(b.as_mut_slice(), a.as_slice(), a.len());
+        utils::copy_slice_memory(b[mut], a[], a.len());
         assert!(a == b);
     }
 
