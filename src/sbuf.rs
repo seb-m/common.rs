@@ -15,9 +15,8 @@ use std::ops;
 use std::os;
 use std::ptr;
 use std::rand::Rng;
-use std::raw::Slice as RawSlice;
+use std::raw::Slice;
 use std::slice::{Items, MutItems};
-use std::slice::Slice as SliceSlice;
 
 use utils;
 
@@ -348,7 +347,7 @@ impl<A: Allocator, T> SBuf<A, T> {
         let mut n = SBuf::with_length(length);
         let rng = &mut utils::urandom_rng();
         rng.fill_bytes(unsafe {
-            mem::transmute(RawSlice {
+            mem::transmute(Slice {
                 data: n.as_mut_ptr() as *const u8,
                 len: n.size()
             })
@@ -399,8 +398,8 @@ impl<A: Allocator, T> SBuf<A, T> {
 
     /// Build a new instance by concatenating `items` together.
     pub fn from_sbufs(items: &[&SBuf<A, T>]) -> SBuf<A, T> {
-        let v: Vec<&[T]> = items.iter().map(|x| (*x)[]).collect();
-        SBuf::from_slices(v[])
+        let v: Vec<&[T]> = items.iter().map(|x| x.as_slice()).collect();
+        SBuf::from_slices(v.slice_from(0))
     }
 
     /// Return a pointer to buffer's memory.
@@ -427,10 +426,20 @@ impl<A: Allocator, T> SBuf<A, T> {
         }
     }
 
+    /// Work with `self` as a slice.
+    pub fn as_slice(&self) -> &[T] {
+        unsafe {
+            mem::transmute(Slice {
+                data: self.as_ptr(),
+                len: self.len
+            })
+        }
+    }
+
     /// Work with `self` as a mutable slice.
     pub fn as_mut_slice(&mut self) -> &mut [T] {
         unsafe {
-            mem::transmute(RawSlice {
+            mem::transmute(Slice {
                 data: self.as_mut_ptr() as *const T,
                 len: self.len
             })
@@ -443,7 +452,7 @@ impl<A: Allocator, T> SBuf<A, T> {
         let dst_type_size = mem::size_of::<U>();
         assert!(bytes_size > 0 && bytes_size % dst_type_size == 0);
         unsafe {
-            mem::transmute(RawSlice {
+            mem::transmute(Slice {
                 data: self.ptr as *const U,
                 len: bytes_size / dst_type_size
             })
@@ -456,7 +465,7 @@ impl<A: Allocator, T> SBuf<A, T> {
         let dst_type_size = mem::size_of::<U>();
         assert!(bytes_size > 0 && bytes_size % dst_type_size == 0);
         unsafe {
-            mem::transmute(RawSlice {
+            mem::transmute(Slice {
                 data: self.ptr as *const U,
                 len: bytes_size / dst_type_size
             })
@@ -466,25 +475,63 @@ impl<A: Allocator, T> SBuf<A, T> {
     /// Return a reference to the value at index `index`. Fails if
     /// `index` is out of bounds.
     pub fn get(&self, index: uint) -> &T {
-        &self[][index]
+        &self.as_slice()[index]
     }
 
     /// Return a mutable reference to the value at index `index`. Fails
     /// if `index` is out of bounds.
     pub fn get_mut(&mut self, index: uint) -> &mut T {
-        &mut self[mut][index]
+        &mut self.as_mut_slice()[index]
     }
 
     /// Return an iterator over references to the elements of the buffer
     /// in order.
     pub fn iter(&self) -> Items<T> {
-        self[].iter()
+        self.as_slice().iter()
     }
 
     /// Return an iterator over mutable references to the elements of the
     /// buffer in order.
     pub fn iter_mut(&mut self) -> MutItems<T> {
-        self[mut].iter_mut()
+        self.as_mut_slice().iter_mut()
+    }
+
+    /// Return a slice of self spanning the interval [`start`, `end`).
+    /// Fails when the slice (or part of it) is outside the bounds of self,
+    /// or when `start` > `end`.
+    pub fn slice(&self, start: uint, end: uint) -> &[T] {
+        self.as_slice().slice(start, end)
+    }
+
+    /// Return a mutable slice of `self` between `start` and `end`.
+    /// Fails when `start` or `end` point outside the bounds of `self`, or when
+    /// `start` > `end`.
+    pub fn slice_mut(&mut self, start: uint, end: uint) -> &mut [T] {
+        self.as_mut_slice().slice_mut(start, end)
+    }
+
+    /// Return a slice of `self` from `start` to the end of the buffer.
+    /// Fails when `start` points outside the bounds of self.
+    pub fn slice_from(&self, start: uint) -> &[T] {
+        self.as_slice().slice_from(start)
+    }
+
+    /// Return a mutable slice of self from `start` to the end of the buffer.
+    /// Fails when `start` points outside the bounds of self.
+    pub fn slice_from_mut(&mut self, start: uint) -> &mut [T] {
+        self.as_mut_slice().slice_from_mut(start)
+    }
+
+    /// Return a slice of self from the start of the buffer to `end`.
+    /// Fails when `end` points outside the bounds of self.
+    pub fn slice_to(&self, end: uint) -> &[T] {
+        self.as_slice().slice_to(end)
+    }
+
+    /// Return a mutable slice of self from the start of the buffer to `end`.
+    /// Fails when `end` points outside the bounds of self.
+    pub fn slice_to_mut(&mut self, end: uint) -> &mut [T] {
+        self.as_mut_slice().slice_to_mut(end)
     }
 
     /// Return a pair of mutable slices that divides the buffer at an index.
@@ -494,12 +541,12 @@ impl<A: Allocator, T> SBuf<A, T> {
     /// `[mid, len)` (excluding the index `len` itself). Fails if
     /// `mid > len`.
     pub fn split_at_mut(&mut self, mid: uint) -> (&mut [T], &mut [T]) {
-        self[mut].split_at_mut(mid)
+        self.as_mut_slice().split_at_mut(mid)
     }
 
     /// Reverse the order of elements in a buffer, in place.
     pub fn reverse(&mut self) {
-        self[mut].reverse()
+        self.as_mut_slice().reverse()
     }
 }
 
@@ -529,7 +576,7 @@ impl<A: Allocator, T> Drop for SBuf<A, T> {
 
 impl<A: Allocator, T> Clone for SBuf<A, T> {
     fn clone(&self) -> SBuf<A, T> {
-        SBuf::from_slice(self[])
+        SBuf::from_slice(self.as_slice())
     }
 }
 
@@ -545,61 +592,45 @@ impl<A: Allocator, T> IndexMut<uint, T> for SBuf<A, T> {
     }
 }
 
-impl<A: Allocator, T> SliceSlice<T> for SBuf<A, T> {
-    /// Return `self` as a slice.
-    fn as_slice(&self) -> &[T] {
-        unsafe {
-            mem::transmute(RawSlice {
-                data: self.as_ptr(),
-                len: self.len
-            })
-        }
-    }
-}
-
-fn slice_to_slice<'a, T, U: SliceSlice<T>>(this: &'a U) -> &'a [T] {
-    this.as_slice()
-}
-
 impl<A: Allocator, T> ops::Slice<uint, [T]> for SBuf<A, T> {
-    fn as_slice<'a>(&'a self) -> &'a [T] {
-        slice_to_slice(self)
+    fn as_slice_<'a>(&'a self) -> &'a [T] {
+        self.as_slice()
     }
 
-    fn slice_from<'a>(&'a self, start: &uint) -> &'a [T] {
-        slice_to_slice(self).slice_from(start)
+    fn slice_from_<'a>(&'a self, start: &uint) -> &'a [T] {
+        self.as_slice().slice_from_(start)
     }
 
-    fn slice_to<'a>(&'a self, end: &uint) -> &'a [T] {
-        slice_to_slice(self).slice_to(end)
+    fn slice_to_<'a>(&'a self, end: &uint) -> &'a [T] {
+        self.as_slice().slice_to_(end)
     }
 
-    fn slice<'a>(&'a self, start: &uint, end: &uint) -> &'a [T] {
-        slice_to_slice(self).slice(start, end)
+    fn slice_<'a>(&'a self, start: &uint, end: &uint) -> &'a [T] {
+        self.as_slice().slice_(start, end)
     }
 }
 
 impl<A: Allocator, T> ops::SliceMut<uint, [T]> for SBuf<A, T> {
-    fn as_mut_slice<'a>(&'a mut self) -> &'a mut [T] {
+    fn as_mut_slice_<'a>(&'a mut self) -> &'a mut [T] {
         self.as_mut_slice()
     }
 
-    fn slice_from_mut<'a>(&'a mut self, start: &uint) -> &'a mut [T] {
-        self.as_mut_slice().slice_from_mut(start)
+    fn slice_from_mut_<'a>(&'a mut self, start: &uint) -> &'a mut [T] {
+        self.as_mut_slice().slice_from_mut_(start)
     }
 
-    fn slice_to_mut<'a>(&'a mut self, end: &uint) -> &'a mut [T] {
-        self.as_mut_slice().slice_to_mut(end)
+    fn slice_to_mut_<'a>(&'a mut self, end: &uint) -> &'a mut [T] {
+        self.as_mut_slice().slice_to_mut_(end)
     }
 
-    fn slice_mut<'a>(&'a mut self, start: &uint, end: &uint) -> &'a mut [T] {
-        self.as_mut_slice().slice_mut(start, end)
+    fn slice_mut_<'a>(&'a mut self, start: &uint, end: &uint) -> &'a mut [T] {
+        self.as_mut_slice().slice_mut_(start, end)
     }
 }
 
 impl<A: Allocator, T> PartialEq for SBuf<A, T> {
     fn eq(&self, other: &SBuf<A, T>) -> bool {
-        utils::bytes_eq(self[], other[])
+        utils::bytes_eq(self.as_slice(), other.as_slice())
     }
 }
 
@@ -614,7 +645,7 @@ impl<A: Allocator, T> Collection for SBuf<A, T> {
 
 impl<A: Allocator, T: fmt::Show> fmt::Show for SBuf<A, T> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        self[].fmt(f)
+        self.as_slice().fmt(f)
     }
 }
 
@@ -623,7 +654,7 @@ impl<A: Allocator,
      S: Encoder<E>,
      T: Encodable<S, E>> Encodable<S, E> for SBuf<A, T> {
     fn encode(&self, s: &mut S) -> Result<(), E> {
-        self[].encode(s)
+        self.as_slice().encode(s)
     }
 }
 
@@ -644,7 +675,8 @@ impl<A: Allocator,
 
 impl<A: Allocator> ToHex for SBuf<A, u8> {
     fn to_hex(&self) -> String {
-        self[].to_hex()
+        let s = self.as_slice();
+        s.to_hex()
     }
 }
 
@@ -660,18 +692,18 @@ mod test {
         let mut s: [u8, ..256] = [0, ..256];
 
         let a: SBuf<StdHeapAllocator, i64> = SBuf::new_zero(256);
-        assert!(a[] == r);
+        assert!(a.as_slice() == r);
 
         for i in range(0u, 256) {
             r[i] = i as i64;
             s[i] = i as u8;
         }
 
-        let b: SBuf<StdHeapAllocator, i64> = SBuf::from_bytes(s[]);
-        assert!(b[] == r);
+        let b: SBuf<StdHeapAllocator, i64> = SBuf::from_bytes(s.as_slice());
+        assert!(b.as_slice() == r);
 
-        let c: SBuf<StdHeapAllocator, i64> = SBuf::from_slice(r[]);
-        assert!(c[] == r);
+        let c: SBuf<StdHeapAllocator, i64> = SBuf::from_slice(r.as_slice());
+        assert!(c.as_slice() == r);
 
         let d: SBuf<StdHeapAllocator, i64> = unsafe {
             SBuf::from_buf(c.as_ptr(), c.len())
