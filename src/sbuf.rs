@@ -398,8 +398,8 @@ impl<A: Allocator, T> SBuf<A, T> {
 
     /// Build a new instance by concatenating `items` together.
     pub fn from_sbufs(items: &[&SBuf<A, T>]) -> SBuf<A, T> {
-        let v: Vec<&[T]> = items.iter().map(|x| x.as_slice()).collect();
-        SBuf::from_slices(v.slice_from(0))
+        let v: Vec<&[T]> = items.iter().map(|x| (*x)[]).collect();
+        SBuf::from_slices(v[])
     }
 
     /// Return a pointer to buffer's memory.
@@ -475,63 +475,63 @@ impl<A: Allocator, T> SBuf<A, T> {
     /// Return a reference to the value at index `index`. Fails if
     /// `index` is out of bounds.
     pub fn get(&self, index: uint) -> &T {
-        &self.as_slice()[index]
+        &self[][index]
     }
 
     /// Return a mutable reference to the value at index `index`. Fails
     /// if `index` is out of bounds.
     pub fn get_mut(&mut self, index: uint) -> &mut T {
-        &mut self.as_mut_slice()[index]
+        &mut self[mut][index]
     }
 
     /// Return an iterator over references to the elements of the buffer
     /// in order.
     pub fn iter(&self) -> Items<T> {
-        self.as_slice().iter()
+        self[].iter()
     }
 
     /// Return an iterator over mutable references to the elements of the
     /// buffer in order.
     pub fn iter_mut(&mut self) -> MutItems<T> {
-        self.as_mut_slice().iter_mut()
+        self[mut].iter_mut()
     }
 
     /// Return a slice of self spanning the interval [`start`, `end`).
     /// Fails when the slice (or part of it) is outside the bounds of self,
     /// or when `start` > `end`.
     pub fn slice(&self, start: uint, end: uint) -> &[T] {
-        self.as_slice().slice(start, end)
+        self[][start..end]
     }
 
     /// Return a mutable slice of `self` between `start` and `end`.
     /// Fails when `start` or `end` point outside the bounds of `self`, or when
     /// `start` > `end`.
     pub fn slice_mut(&mut self, start: uint, end: uint) -> &mut [T] {
-        self.as_mut_slice().slice_mut(start, end)
+        self[mut][mut start..end]
     }
 
     /// Return a slice of `self` from `start` to the end of the buffer.
     /// Fails when `start` points outside the bounds of self.
     pub fn slice_from(&self, start: uint) -> &[T] {
-        self.as_slice().slice_from(start)
+        self[][start..]
     }
 
     /// Return a mutable slice of self from `start` to the end of the buffer.
     /// Fails when `start` points outside the bounds of self.
     pub fn slice_from_mut(&mut self, start: uint) -> &mut [T] {
-        self.as_mut_slice().slice_from_mut(start)
+        self[mut][mut start..]
     }
 
     /// Return a slice of self from the start of the buffer to `end`.
     /// Fails when `end` points outside the bounds of self.
     pub fn slice_to(&self, end: uint) -> &[T] {
-        self.as_slice().slice_to(end)
+        self[][..end]
     }
 
     /// Return a mutable slice of self from the start of the buffer to `end`.
     /// Fails when `end` points outside the bounds of self.
     pub fn slice_to_mut(&mut self, end: uint) -> &mut [T] {
-        self.as_mut_slice().slice_to_mut(end)
+        self[mut][mut ..end]
     }
 
     /// Return a pair of mutable slices that divides the buffer at an index.
@@ -541,12 +541,12 @@ impl<A: Allocator, T> SBuf<A, T> {
     /// `[mid, len)` (excluding the index `len` itself). Fails if
     /// `mid > len`.
     pub fn split_at_mut(&mut self, mid: uint) -> (&mut [T], &mut [T]) {
-        self.as_mut_slice().split_at_mut(mid)
+        self[mut].split_at_mut(mid)
     }
 
     /// Reverse the order of elements in a buffer, in place.
     pub fn reverse(&mut self) {
-        self.as_mut_slice().reverse()
+        self[mut].reverse()
     }
 }
 
@@ -576,7 +576,7 @@ impl<A: Allocator, T> Drop for SBuf<A, T> {
 
 impl<A: Allocator, T> Clone for SBuf<A, T> {
     fn clone(&self) -> SBuf<A, T> {
-        SBuf::from_slice(self.as_slice())
+        SBuf::from_slice(self[])
     }
 }
 
@@ -630,7 +630,7 @@ impl<A: Allocator, T> ops::SliceMut<uint, [T]> for SBuf<A, T> {
 
 impl<A: Allocator, T> PartialEq for SBuf<A, T> {
     fn eq(&self, other: &SBuf<A, T>) -> bool {
-        utils::bytes_eq(self.as_slice(), other.as_slice())
+        utils::bytes_eq(self[], other[])
     }
 }
 
@@ -645,7 +645,7 @@ impl<A: Allocator, T> Collection for SBuf<A, T> {
 
 impl<A: Allocator, T: fmt::Show> fmt::Show for SBuf<A, T> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        self.as_slice().fmt(f)
+        self[].fmt(f)
     }
 }
 
@@ -654,7 +654,7 @@ impl<A: Allocator,
      S: Encoder<E>,
      T: Encodable<S, E>> Encodable<S, E> for SBuf<A, T> {
     fn encode(&self, s: &mut S) -> Result<(), E> {
-        self.as_slice().encode(s)
+        self[].encode(s)
     }
 }
 
@@ -675,8 +675,7 @@ impl<A: Allocator,
 
 impl<A: Allocator> ToHex for SBuf<A, u8> {
     fn to_hex(&self) -> String {
-        let s = self.as_slice();
-        s.to_hex()
+        self[].to_hex()
     }
 }
 
@@ -692,18 +691,18 @@ mod test {
         let mut s: [u8, ..256] = [0, ..256];
 
         let a: SBuf<StdHeapAllocator, i64> = SBuf::new_zero(256);
-        assert!(a.as_slice() == r);
+        assert!(a[] == r);
 
         for i in range(0u, 256) {
             r[i] = i as i64;
             s[i] = i as u8;
         }
 
-        let b: SBuf<StdHeapAllocator, i64> = SBuf::from_bytes(s.as_slice());
-        assert!(b.as_slice() == r);
+        let b: SBuf<StdHeapAllocator, i64> = SBuf::from_bytes(s[]);
+        assert!(b[] == r);
 
-        let c: SBuf<StdHeapAllocator, i64> = SBuf::from_slice(r.as_slice());
-        assert!(c.as_slice() == r);
+        let c: SBuf<StdHeapAllocator, i64> = SBuf::from_slice(r[]);
+        assert!(c[] == r);
 
         let d: SBuf<StdHeapAllocator, i64> = unsafe {
             SBuf::from_buf(c.as_ptr(), c.len())
