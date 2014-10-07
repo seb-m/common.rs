@@ -597,16 +597,16 @@ impl<A: Allocator, T> ops::Slice<uint, [T]> for SBuf<A, T> {
         self.as_slice()
     }
 
-    fn slice_from_<'a>(&'a self, start: &uint) -> &'a [T] {
-        self.as_slice().slice_from_(start)
+    fn slice_from_or_fail<'a>(&'a self, start: &uint) -> &'a [T] {
+        self.as_slice().slice_from_or_fail(start)
     }
 
-    fn slice_to_<'a>(&'a self, end: &uint) -> &'a [T] {
-        self.as_slice().slice_to_(end)
+    fn slice_to_or_fail<'a>(&'a self, end: &uint) -> &'a [T] {
+        self.as_slice().slice_to_or_fail(end)
     }
 
-    fn slice_<'a>(&'a self, start: &uint, end: &uint) -> &'a [T] {
-        self.as_slice().slice_(start, end)
+    fn slice_or_fail<'a>(&'a self, start: &uint, end: &uint) -> &'a [T] {
+        self.as_slice().slice_or_fail(start, end)
     }
 }
 
@@ -615,16 +615,16 @@ impl<A: Allocator, T> ops::SliceMut<uint, [T]> for SBuf<A, T> {
         self.as_mut_slice()
     }
 
-    fn slice_from_mut_<'a>(&'a mut self, start: &uint) -> &'a mut [T] {
-        self.as_mut_slice().slice_from_mut_(start)
+    fn slice_from_or_fail_mut<'a>(&'a mut self, start: &uint) -> &'a mut [T] {
+        self.as_mut_slice().slice_from_or_fail_mut(start)
     }
 
-    fn slice_to_mut_<'a>(&'a mut self, end: &uint) -> &'a mut [T] {
-        self.as_mut_slice().slice_to_mut_(end)
+    fn slice_to_or_fail_mut<'a>(&'a mut self, end: &uint) -> &'a mut [T] {
+        self.as_mut_slice().slice_to_or_fail_mut(end)
     }
 
-    fn slice_mut_<'a>(&'a mut self, start: &uint, end: &uint) -> &'a mut [T] {
-        self.as_mut_slice().slice_mut_(start, end)
+    fn slice_or_fail_mut<'a>(&'a mut self, start: &uint, end: &uint) -> &'a mut [T] {
+        self.as_mut_slice().slice_or_fail_mut(start, end)
     }
 }
 
