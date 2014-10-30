@@ -110,7 +110,7 @@ impl Allocator for GuardedHeapAllocator {
                              0);
         if ptr == MAP_FAILED {
             let errno = os::errno();
-            fail!("mmap failed: {} ({})",
+            panic!("mmap failed: {} ({})",
                   os::error_string(errno as uint), errno);
         }
 
@@ -119,7 +119,7 @@ impl Allocator for GuardedHeapAllocator {
                                      PROT_NONE);
         if ret != 0 {
             let errno = os::errno();
-            fail!("mprotect failed: {} ({})",
+            panic!("mprotect failed: {} ({})",
                   os::error_string(errno as uint), errno);
         }
 
@@ -129,7 +129,7 @@ impl Allocator for GuardedHeapAllocator {
                              PROT_NONE);
         if ret != 0 {
             let errno = os::errno();
-            fail!("mprotect failed: {} ({})",
+            panic!("mprotect failed: {} ({})",
                   os::error_string(errno as uint), errno);
         }
 
@@ -147,7 +147,7 @@ impl Allocator for GuardedHeapAllocator {
                                full_size as size_t);
         if ret != 0 {
             let errno = os::errno();
-            fail!("munmap failed: {} ({})",
+            panic!("munmap failed: {} ({})",
                   os::error_string(errno as uint), errno);
         }
     }
@@ -176,7 +176,7 @@ mod impadv {
             // There should be a better way to check for the availability
             // of this flag in the kernel and in the libc.
             if errno != EINVAL as int {
-                fail!("madvise failed: {} ({})",
+                panic!("madvise failed: {} ({})",
                       os::error_string(errno as uint), errno);
             }
         }
@@ -197,7 +197,7 @@ mod impadv {
                                  MADV_ZERO_WIRED_PAGES);
         if ret != 0 {
             let errno = os::errno();
-            fail!("madvise failed: {} ({})",
+            panic!("madvise failed: {} ({})",
                   os::error_string(errno as uint), errno);
         }
     }
@@ -233,7 +233,7 @@ mod impinh {
                                    inherit_none);
         if ret != 0 {
             let errno = os::errno();
-            fail!("minherit failed: {} ({})",
+            panic!("minherit failed: {} ({})",
                   os::error_string(errno as uint), errno);
         }
     }
@@ -263,7 +263,7 @@ unsafe fn alloc<A: Allocator, T>(count: uint) -> *mut T {
     let ret = mman::mlock(ptr as *const c_void, size as size_t);
     if ret != 0 {
         let errno = os::errno();
-        fail!("mlock failed: {} ({})",
+        panic!("mlock failed: {} ({})",
               os::error_string(errno as uint), errno);
     }
 
@@ -293,7 +293,7 @@ unsafe fn dealloc<A: Allocator, T>(ptr: *mut T, count: uint) {
     let ret = mman::munlock(ptr as *const c_void, size as size_t);
     if ret != 0 {
         let errno = os::errno();
-        fail!("munlock failed: {} ({})",
+        panic!("munlock failed: {} ({})",
               os::error_string(errno as uint), errno);
     }
 
