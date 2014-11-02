@@ -321,6 +321,10 @@ impl<A: Allocator, T> SBuf<A, T> {
         self.len * mem::size_of::<T>()
     }
 
+    pub fn len(&self) -> uint {
+        self.len
+    }
+
     fn with_length(length: uint) -> SBuf<A, T> {
         if mem::size_of::<T>() == 0 || length == 0 {
             return SBuf::from_raw_parts(0, 0 as *mut T);
@@ -635,12 +639,6 @@ impl<A: Allocator, T> PartialEq for SBuf<A, T> {
 }
 
 impl<A: Allocator, T> Eq for SBuf<A, T> {
-}
-
-impl<A: Allocator, T> Collection for SBuf<A, T> {
-    fn len(&self) -> uint {
-        self.len
-    }
 }
 
 impl<A: Allocator, T: fmt::Show> fmt::Show for SBuf<A, T> {
