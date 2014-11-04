@@ -309,7 +309,7 @@ pub struct SBuf<A, T> {
     ptr: *mut T
 }
 
-impl<A: Allocator, T> SBuf<A, T> {
+impl<A: Allocator, T: Copy> SBuf<A, T> {
     fn from_raw_parts(length: uint, ptr: *mut T) -> SBuf<A, T> {
         SBuf {
             len: length,
@@ -554,7 +554,7 @@ impl<A: Allocator, T> SBuf<A, T> {
     }
 }
 
-impl<A: Allocator, T: FromPrimitive> SBuf<A, T> {
+impl<A: Allocator, T: FromPrimitive + Copy> SBuf<A, T> {
     /// New buffer from bytes.
     pub fn from_bytes(bytes: &[u8]) -> SBuf<A, T> {
         let len = bytes.len();
@@ -578,25 +578,25 @@ impl<A: Allocator, T> Drop for SBuf<A, T> {
     }
 }
 
-impl<A: Allocator, T> Clone for SBuf<A, T> {
+impl<A: Allocator, T: Copy> Clone for SBuf<A, T> {
     fn clone(&self) -> SBuf<A, T> {
         SBuf::from_slice(self[])
     }
 }
 
-impl<A: Allocator, T> Index<uint, T> for SBuf<A, T> {
+impl<A: Allocator, T: Copy> Index<uint, T> for SBuf<A, T> {
     fn index(&self, index: &uint) -> &T {
         self.get(*index)
     }
 }
 
-impl<A: Allocator, T> IndexMut<uint, T> for SBuf<A, T> {
+impl<A: Allocator, T: Copy> IndexMut<uint, T> for SBuf<A, T> {
     fn index_mut(&mut self, index: &uint) -> &mut T {
         self.get_mut(*index)
     }
 }
 
-impl<A: Allocator, T> ops::Slice<uint, [T]> for SBuf<A, T> {
+impl<A: Allocator, T: Copy> ops::Slice<uint, [T]> for SBuf<A, T> {
     fn as_slice_<'a>(&'a self) -> &'a [T] {
         self.as_slice()
     }
@@ -614,7 +614,7 @@ impl<A: Allocator, T> ops::Slice<uint, [T]> for SBuf<A, T> {
     }
 }
 
-impl<A: Allocator, T> ops::SliceMut<uint, [T]> for SBuf<A, T> {
+impl<A: Allocator, T: Copy> ops::SliceMut<uint, [T]> for SBuf<A, T> {
     fn as_mut_slice_<'a>(&'a mut self) -> &'a mut [T] {
         self.as_mut_slice()
     }
@@ -632,16 +632,16 @@ impl<A: Allocator, T> ops::SliceMut<uint, [T]> for SBuf<A, T> {
     }
 }
 
-impl<A: Allocator, T> PartialEq for SBuf<A, T> {
+impl<A: Allocator, T: Copy> PartialEq for SBuf<A, T> {
     fn eq(&self, other: &SBuf<A, T>) -> bool {
         utils::bytes_eq(self[], other[])
     }
 }
 
-impl<A: Allocator, T> Eq for SBuf<A, T> {
+impl<A: Allocator, T: Copy> Eq for SBuf<A, T> {
 }
 
-impl<A: Allocator, T: fmt::Show> fmt::Show for SBuf<A, T> {
+impl<A: Allocator, T: fmt::Show + Copy> fmt::Show for SBuf<A, T> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         self[].fmt(f)
     }
@@ -650,7 +650,7 @@ impl<A: Allocator, T: fmt::Show> fmt::Show for SBuf<A, T> {
 impl<A: Allocator,
      E,
      S: Encoder<E>,
-     T: Encodable<S, E>> Encodable<S, E> for SBuf<A, T> {
+     T: Encodable<S, E> + Copy> Encodable<S, E> for SBuf<A, T> {
     fn encode(&self, s: &mut S) -> Result<(), E> {
         self[].encode(s)
     }
@@ -659,7 +659,7 @@ impl<A: Allocator,
 impl<A: Allocator,
      E,
      D: Decoder<E>,
-     T: Decodable<D, E>> Decodable<D, E> for SBuf<A, T> {
+     T: Decodable<D, E> + Copy> Decodable<D, E> for SBuf<A, T> {
     fn decode(d: &mut D) -> Result<SBuf<A, T>, E> {
         d.read_seq(|d, len| {
             let mut n = SBuf::with_length(len);
