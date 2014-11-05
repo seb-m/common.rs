@@ -359,7 +359,7 @@ impl<A: Allocator, T: Copy> SBuf<A, T> {
         n
     }
 
-    /// New allocated buffer with its `length` elements initilized from
+    /// New allocated buffer with its `length` elements initialized from
     /// provided closure `op`.
     pub fn from_fn(length: uint, op: |uint| -> T) -> SBuf<A, T> {
         let mut n = SBuf::with_length(length);
@@ -406,7 +406,7 @@ impl<A: Allocator, T: Copy> SBuf<A, T> {
         SBuf::from_slices(v[])
     }
 
-    /// Return a pointer to buffer's memory.
+    /// Return an immutable pointer to buffer's memory.
     pub fn as_ptr(&self) -> *const T {
         // (seb) Comment copied from vec.rs:
         // If we have a 0-sized vector, then the base pointer should not be NULL
@@ -414,7 +414,7 @@ impl<A: Allocator, T: Copy> SBuf<A, T> {
         // pointer as the first element in the vector, but this will end up
         // being Some(NULL) which is optimized to None.
         if mem::size_of::<T>() == 0 {
-            1 as *const T
+            heap::EMPTY as *const T
         } else {
             self.ptr as *const T
         }
@@ -424,7 +424,7 @@ impl<A: Allocator, T: Copy> SBuf<A, T> {
     pub fn as_mut_ptr(&mut self) -> *mut T {
         // see above for the 0-size check
         if mem::size_of::<T>() == 0 {
-            1 as *mut T
+            heap::EMPTY as *mut T
         } else {
             self.ptr
         }
@@ -568,10 +568,14 @@ impl<A: Allocator, T: FromPrimitive + Copy> SBuf<A, T> {
 }
 
 #[unsafe_destructor]
-impl<A: Allocator, T> Drop for SBuf<A, T> {
+impl<A: Allocator, T: Copy> Drop for SBuf<A, T> {
     fn drop(&mut self) {
-        if self.len != 0 && !self.ptr.is_null() {
+        if self.len != 0 && !self.ptr.is_null() && mem::size_of::<T>() != 0 {
             unsafe {
+                // There is no explicit drop on each T elements, as T
+                // is contrained to Copy it should not be an issue?
+                // It would create an issue to use ptr::read() as it could
+                // copy memory slot to temporary objects.
                 dealloc::<A, T>(self.ptr, self.len)
             }
         }
@@ -629,6 +633,18 @@ impl<A: Allocator, T: Copy> ops::SliceMut<uint, [T]> for SBuf<A, T> {
 
     fn slice_or_fail_mut<'a>(&'a mut self, start: &uint, end: &uint) -> &'a mut [T] {
         self.as_mut_slice().slice_or_fail_mut(start, end)
+    }
+}
+
+impl<A: Allocator, T: Copy> ops::Deref<[T]> for SBuf<A, T> {
+    fn deref(&self) -> &[T] {
+        self.as_slice()
+    }
+}
+
+impl<A: Allocator, T: Copy> ops::DerefMut<[T]> for SBuf<A, T> {
+    fn deref_mut(&mut self) -> &mut [T] {
+        self.as_mut_slice()
     }
 }
 
