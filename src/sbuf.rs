@@ -573,9 +573,11 @@ impl<A: Allocator, T: Copy> Drop for SBuf<A, T> {
         if self.len != 0 && !self.ptr.is_null() && mem::size_of::<T>() != 0 {
             unsafe {
                 // There is no explicit drop on each T elements, as T
-                // is contrained to Copy it should not be an issue?
+                // is contrained to Copy it should not be an issue as they
+                // do not implement destructors?
                 // It would create an issue to use ptr::read() as it could
-                // copy memory slot to temporary objects.
+                // copy memory slots to temporary objects.
+                assert!(!intrinsics::needs_drop::<T>());
                 dealloc::<A, T>(self.ptr, self.len)
             }
         }
