@@ -186,12 +186,12 @@ mod tests {
         let b2 = b1;
 
         utils::bytes_cswap(0, a1, b1);
-        assert!(a1 == a2);
-        assert!(b1 == b2);
+        assert!(a1[] == a2[]);
+        assert!(b1[] == b2[]);
 
         utils::bytes_cswap(1, a1, b1);
-        assert!(a1 == b2);
-        assert!(b1 == a2);
+        assert!(a1[] == b2[]);
+        assert!(b1[] == a2[]);
     }
 
     #[test]
@@ -199,9 +199,9 @@ mod tests {
         let a: [i64, ..64] = [42, ..64];
         let mut b: [i64, ..64] = [0, ..64];
 
-        assert!(a != b);
+        assert!(a[] != b[]);
         utils::copy_slice_memory(b[mut], a[], a.len());
-        assert!(a == b);
+        assert!(a[] == b[]);
     }
 
     #[test]

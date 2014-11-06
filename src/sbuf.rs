@@ -10,6 +10,7 @@ use serialize::hex::ToHex;
 use std::fmt;
 use std::intrinsics;
 use std::iter::AdditiveIterator;
+use std::kinds::marker::NoSync;
 use std::mem;
 use std::ops;
 use std::os;
@@ -306,14 +307,16 @@ unsafe fn dealloc<A: Allocator, T>(ptr: *mut T, count: uint) {
 /// Secure Buffer.
 pub struct SBuf<A, T> {
     len: uint,
-    ptr: *mut T
+    ptr: *mut T,
+    _nosync: NoSync
 }
 
 impl<A: Allocator, T: Copy> SBuf<A, T> {
     fn from_raw_parts(length: uint, ptr: *mut T) -> SBuf<A, T> {
         SBuf {
             len: length,
-            ptr: ptr
+            ptr: ptr,
+            _nosync: NoSync
         }
     }
 
@@ -457,7 +460,7 @@ impl<A: Allocator, T: Copy> SBuf<A, T> {
         assert!(bytes_size > 0 && bytes_size % dst_type_size == 0);
         unsafe {
             mem::transmute(Slice {
-                data: self.ptr as *const U,
+                data: self.as_ptr() as *const U,
                 len: bytes_size / dst_type_size
             })
         }
@@ -470,7 +473,7 @@ impl<A: Allocator, T: Copy> SBuf<A, T> {
         assert!(bytes_size > 0 && bytes_size % dst_type_size == 0);
         unsafe {
             mem::transmute(Slice {
-                data: self.ptr as *const U,
+                data: self.as_ptr() as *const U,
                 len: bytes_size / dst_type_size
             })
         }
@@ -633,7 +636,8 @@ impl<A: Allocator, T: Copy> ops::SliceMut<uint, [T]> for SBuf<A, T> {
         self.as_mut_slice().slice_to_or_fail_mut(end)
     }
 
-    fn slice_or_fail_mut<'a>(&'a mut self, start: &uint, end: &uint) -> &'a mut [T] {
+    fn slice_or_fail_mut<'a>(&'a mut self, start: &uint,
+                             end: &uint) -> &'a mut [T] {
         self.as_mut_slice().slice_or_fail_mut(start, end)
     }
 }
@@ -698,7 +702,9 @@ impl<A: Allocator> ToHex for SBuf<A, u8> {
 
 #[cfg(test)]
 mod test {
-    use sbuf::{StdHeapAllocator, SBuf};
+    use std::ptr;
+
+    use sbuf::{StdHeapAllocator, GuardedHeapAllocator, SBuf};
 
 
     #[test]
@@ -707,7 +713,7 @@ mod test {
         let mut s: [u8, ..256] = [0, ..256];
 
         let a: SBuf<StdHeapAllocator, i64> = SBuf::new_zero(256);
-        assert!(a[] == r);
+        assert!(a[] == r[]);
 
         for i in range(0u, 256) {
             r[i] = i as i64;
@@ -715,14 +721,30 @@ mod test {
         }
 
         let b: SBuf<StdHeapAllocator, i64> = SBuf::from_bytes(s[]);
-        assert!(b[] == r);
+        assert!(b[] == r[]);
 
         let c: SBuf<StdHeapAllocator, i64> = SBuf::from_slice(r[]);
-        assert!(c[] == r);
+        assert!(c[] == r[]);
 
         let d: SBuf<StdHeapAllocator, i64> = unsafe {
             SBuf::from_buf(c.as_ptr(), c.len())
         };
         assert!(d == c);
+    }
+
+    #[test]
+    fn test_overrun() {
+        let enabled = false;
+
+        if !enabled {
+            return;
+        }
+
+        let mut d = [0u8, ..8192];
+        let s: SBuf<GuardedHeapAllocator, u8> = SBuf::new_zero(256);
+
+        unsafe {
+            ptr::copy_nonoverlapping_memory(d.as_mut_ptr(), s.as_ptr(), 8192);
+        }
     }
 }
