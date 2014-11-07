@@ -4,7 +4,6 @@ use std::mem;
 use std::num;
 use std::ptr;
 use std::rand::os::OsRng;
-use std::slice::MutableSlice;
 
 
 /// `Bytes` to `u32` little-endian decoding.

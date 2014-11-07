@@ -308,7 +308,7 @@ unsafe fn dealloc<A: Allocator, T>(ptr: *mut T, count: uint) {
 pub struct SBuf<A, T> {
     len: uint,
     ptr: *mut T,
-    _nosync: NoSync
+    nosync: NoSync
 }
 
 impl<A: Allocator, T: Copy> SBuf<A, T> {
@@ -316,7 +316,7 @@ impl<A: Allocator, T: Copy> SBuf<A, T> {
         SBuf {
             len: length,
             ptr: ptr,
-            _nosync: NoSync
+            nosync: NoSync
         }
     }
 
