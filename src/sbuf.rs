@@ -176,7 +176,7 @@ mod impadv {
             // old kernels respectively Linux < 3.4 and Linux < 2.6.16.
             // There should be a better way to check for the availability
             // of this flag in the kernel and in the libc.
-            if errno != EINVAL as int {
+            if errno != EINVAL as uint {
                 panic!("madvise failed: {} ({})",
                        os::error_string(errno as uint), errno);
             }
