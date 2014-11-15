@@ -1,7 +1,7 @@
 //! Crypto utils
 use std::intrinsics;
 use std::mem;
-use std::num;
+use std::num::{Int, SignedInt};
 use std::ptr;
 use std::rand::os::OsRng;
 
@@ -111,12 +111,12 @@ pub fn bytes_eq<T>(x: &[T], y: &[T]) -> bool {
 /// `x` and `y` are swapped iff `cond` is equal to `1`, there are left
 /// unchanged iff `cond` is equal to `0`. Currently only works for arrays
 /// of signed integers. `cond` is expected to be `0` or `1`.
-pub fn bytes_cswap<T: Signed + Primitive + Int>(cond: T,
+pub fn bytes_cswap<T: SignedInt>(cond: T,
                                                 x: &mut [T],
                                                 y: &mut [T]) {
     assert_eq!(x.len(), y.len());
 
-    let c: T = !(cond - num::one());
+    let c: T = !(cond - Int::one());
     for i in range(0u, x.len()) {
         let t = c & (x[i] ^ y[i]);
         x[i] = x[i] ^ t;

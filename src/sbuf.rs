@@ -12,6 +12,7 @@ use std::intrinsics;
 use std::iter::AdditiveIterator;
 use std::kinds::marker::NoSync;
 use std::mem;
+use std::num::Int;
 use std::ops;
 use std::os;
 use std::ptr;
@@ -253,8 +254,7 @@ unsafe fn alloc<A: Allocator, T>(count: uint) -> *mut T {
 
     assert!(size_of_t != 0 && count != 0);
 
-    let size = count.checked_mul(&size_of_t)
-                    .expect("alloc length overflow");
+    let size = count.checked_mul(size_of_t).unwrap();
 
     // allocate
     let allocator: A = Allocator::new();
@@ -282,8 +282,7 @@ unsafe fn dealloc<A: Allocator, T>(ptr: *mut T, count: uint) {
     assert!(size_of_t != 0);
     assert!(count != 0);
 
-    let size = count.checked_mul(&size_of_t)
-                    .expect("alloc length overflow");
+    let size = count.checked_mul(size_of_t).unwrap();
 
     // zero-out
     // FIXME: not sure how much this llvm intrinsics could not be
