@@ -166,7 +166,7 @@ mod tests {
     fn test_bytes_eq() {
         let a: [u8, ..64] = [0u8, ..64];
         let b: [u8, ..64] = [0u8, ..64];
-        assert!(super::bytes_eq(a, b));
+        assert!(super::bytes_eq(&a, &b));
 
         for _ in range(0u, 256) {
             let va = Vec::from_fn(64, |_| random::<u8>());
@@ -184,11 +184,11 @@ mod tests {
         let mut b1: [i8, ..64] = [1i8, ..64];
         let b2 = b1;
 
-        utils::bytes_cswap(0, a1, b1);
+        utils::bytes_cswap(0, &mut a1, &mut b1);
         assert!(a1[] == a2[]);
         assert!(b1[] == b2[]);
 
-        utils::bytes_cswap(1, a1, b1);
+        utils::bytes_cswap(1, &mut a1, &mut b1);
         assert!(a1[] == b2[]);
         assert!(b1[] == a2[]);
     }
